@@ -41,7 +41,7 @@ P2_points = [(x, D, y) for (x, y) in P2_points]
 #for i in P1_points:
     #print(i)
 # Open a file for writing
-with open('Airfoils1_Points.csv', 'w', newline='') as f:
+with open('Airfoil1_Points.csv', 'w', newline='') as f:
     writer = csv.writer(f)
 
     # Write the points to the CSV file
@@ -56,6 +56,17 @@ with open('Airfoil2_points.csv', 'w', newline='') as f:
     writer = csv.writer(f)
 
     # Write the points to the CSV file
+    for point in P2_points:
+        writer.writerow(point)
+
+# Display surface profiles
+# Panel surface
+with open('CellPanels.csv', 'w', newline='') as f:
+    writer = csv.writer(f)
+
+    # Write the points to the CSV file
+    for point in P1_points:
+        writer.writerow(point)
     for point in P2_points:
         writer.writerow(point)
 
