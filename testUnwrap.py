@@ -3,7 +3,6 @@ import csv
 import matplotlib.pyplot as plt
 
 # Read in the airfoil points from the CSV file
-
 points = []
 
 # Open the file for reading
