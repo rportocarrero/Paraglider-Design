@@ -3,60 +3,43 @@ import csv
 import matplotlib.pyplot as plt
 
 # Read in the airfoil points from the CSV file
-points = []
 
+points = []
 # Open the file for reading
 with open('testAirfoilPoints.csv', 'r') as f:
     reader = csv.reader(f)
 
-    # Read points from the CSV file
+# Read points from the CSV file
     for row in reader:
         points.append((float(row[0]), float(row[1])))
 
-print(points)
+airfoil_points = points
 
+# write points to file
+def write_points_file(filename, points):
+    # Open a file for writing
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f)
+
+        # Write the points to the CSV file
+        for point in points:
+            writer.writerow(point)
 
 # Generate the points for the first airfoil profile
 scale_factor = 5
-P1_points = [(x*scale_factor, y*scale_factor) for (x, y) in points]
-#print("Airfoil 1 points: ")
-#for i in P1_points:
-    #print(i)
-
+P1_points = [(x*scale_factor, y*scale_factor) for (x, y) in airfoil_points]
 
 # Generate the points for the second airfoil profile
 scale_factor = 4
-P2_points = [(x*scale_factor, y*scale_factor) for (x, y) in points]
-#print("Airfoil 2 points: ")
-#for i in P2_points:
-    #print(i)
-
+P2_points = [(x*scale_factor, y*scale_factor) for (x, y) in airfoil_points]
 
 # Add the cell distance parameter to turn the airfoild profiles into 3d.
 D = 1 #cell width
 P1_points = [(x, 0, y) for (x, y) in P1_points]
 P2_points = [(x, D, y) for (x, y) in P2_points]
-#print("Airfoil 1 points: ")
-#for i in P1_points:
-    #print(i)
-# Open a file for writing
-with open('Airfoil1_Points.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
 
-    # Write the points to the CSV file
-    for point in P1_points:
-        writer.writerow(point)
-
-#print("Airfoil 2 points: ")
-#for i in P2_points:
-    #print(i)
-# Open a file for writing
-with open('Airfoil2_points.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-
-    # Write the points to the CSV file
-    for point in P2_points:
-        writer.writerow(point)
+# write points to file
+write_points_file('Airfoil2_points.csv', P2_points)
 
 # Display surface profiles
 # Panel surface
@@ -75,8 +58,8 @@ normal_vectors = []
 # Find the normal vector for the panel
 def find_normal_vector(c1,c2,c3):
     # find the cross-product
-    U=[b-a for a,b in zip(c1,c3)]
-    V=[c-a for a,c in zip(c1,c2)]
+    U=[c-b for c,b in zip(c3,c2)]
+    V=[a-b for b,a in zip(c2,c1)]
 
     N=np.cross(U,V)
     # normalize the vector
@@ -85,52 +68,43 @@ def find_normal_vector(c1,c2,c3):
 
 # Find the normal vectors for each panel
 for i in range(len(P1_points)-1):
-    normal_vector = find_normal_vector(P1_points[i], P1_points[i+1],P2_points[i])
+    normal_vector = find_normal_vector(P1_points[i], P2_points[i],P2_points[i+1])
     normal_vectors.append(normal_vector)
 
-# Display the normal vectors
-#print("Normal vectors: ")
-#for vector in normal_vectors:
-    #print(vector)
-# Open a file for writing
-with open('normal_Vectors.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-
-    # Write the points to the CSV file
-    for vector in normal_vectors:
-        writer.writerow(vector)
+# write normal vectors to file
+write_points_file('normal_Vectors.csv', normal_vectors)
 
 # Initialize an empty list to store all axes of rotation
 axes_of_rotation = []
 
+def find_rotation_axis(normal_vector):
+    rot_axis = np.cross(normal_vector, [0, 0, 1])
+    return rot_axis/np.linalg.norm(rot_axis)
+
 # Iterate over all normal vectors
 for normal_vector in normal_vectors:
-    # Compute the axis of rotation for the current panel
-    rot_axis = np.cross(normal_vector, [0, 0, 1])
-
     # Append the axis of rotation to the list
-    axes_of_rotation.append(rot_axis)
+    axes_of_rotation.append(find_rotation_axis(normal_vector))
 
 # Display the axis of rotation
-print("Axes of rotation: ")
-for rotax in axes_of_rotation:
-    print(f"{rotax}")
+#print("Axes of rotation: ")
+#for rotax in axes_of_rotation:
+#    print(f"{rotax}")
 
-# Open a file for writing
-with open('rotationAxis.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-
-    # Write the points to the CSV file
-    for vector in axes_of_rotation:
-        writer.writerow(vector)
+# write axes of rotation to file
+write_points_file('rotationAxis.csv', axes_of_rotation)
 
 # Initialize list to store angles of rotation
 angles_of_rotation = []
 
+#calculate rotation angle
+def find_rotation_angle(normal_vector):
+    rot_angle = np.arccos(np.dot(normal_vector, [0, 0, 1]))
+    return rot_angle
+
 # Calculate and store the angle of rotation for each panel
 for i in range(len(normal_vectors)):
-    rot_angle = np.arccos(np.dot(normal_vectors[i], axes_of_rotation[i]))
-    angles_of_rotation.append(rot_angle)
+    angles_of_rotation.append(find_rotation_angle(normal_vectors[i]))
 
 # Open a file for writing
 with open('rotationAngles.csv', 'w', newline='') as f:
@@ -140,21 +114,16 @@ with open('rotationAngles.csv', 'w', newline='') as f:
     for angle in angles_of_rotation:
         writer.writerow([angle])  # Pass angle as a single-item list
 
-print("Rotating the points")
-import numpy as np
+# function for the skew-symmatrix matrix of a vector
+def skew(x):
+    return np.array([[0, -x[2], x[1]],
+                     [x[2], 0, -x[0]],
+                     [-x[1], x[0], 0]])
 
+# derive the Rotation matrix around an arbitrary axis
 def rotation_matrix(axis_of_rotation, rot_angle):
-    # unpack the axis of rotation
-    x, y, z = axis_of_rotation
-
-    R = np.array([
-        [np.cos(rot_angle) + x**2 * (1 - np.cos(rot_angle)), x*y*(1 - np.cos(rot_angle)) - z*np.sin(rot_angle), x*z*(1 - np.cos(rot_angle)) + y*np.sin(rot_angle)],
-        [x*y*(1 - np.cos(rot_angle)) + z*np.sin(rot_angle), np.cos(rot_angle) + y**2 * (1 - np.cos(rot_angle)), y*z*(1 - np.cos(rot_angle)) - x*np.sin(rot_angle)],
-        [x*z*(1 - np.cos(rot_angle)) - y*np.sin(rot_angle), y*z*(1 - np.cos(rot_angle)) + x*np.sin(rot_angle), np.cos(rot_angle) + z**2 * (1 - np.cos(rot_angle))]
-    ])
-
+    R = (np.cos(rot_angle)*np.identity(3)) + ((1-np.cos(rot_angle))*np.outer(axis_of_rotation, axis_of_rotation)) + (np.sin(rot_angle)*skew(axis_of_rotation))
     return R
-
 
 # rotate the points
 P1_points_rotated = []
@@ -178,3 +147,25 @@ with open('Rotatedpoints.csv', 'w', newline='') as f:
         writer.writerow(point)
 
 
+test_points = [[0,0,0],[1,0,0],[1,1,1],[0,1,1]]
+print(f'Test Points: {test_points}')
+
+normal_vector = find_normal_vector(test_points[0], test_points[1], test_points[2])
+print(f'Normal Vector: {normal_vector}')
+
+rot_axis = find_rotation_axis(normal_vector)
+print(f'Rotation Axis:{rot_axis}')
+
+rot_angle = find_rotation_angle(normal_vector)
+print(f'Rotation Angle:{rot_angle}')
+
+rot_matrix = rotation_matrix(rot_axis, rot_angle)
+print(f'Rotation Matrix:{rot_matrix}')
+
+# Rotate the points
+rotated_points=[]
+for point in test_points:
+    rotated_points.append(np.dot(rot_matrix, point))
+
+for point in rotated_points:
+    print(f'Rotated Point:{point}')
