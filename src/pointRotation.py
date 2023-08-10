@@ -10,13 +10,18 @@ def find_normal_vector(c1,c2,c3):
 
     N=np.cross(U,V)
     # normalize the vector
-    N=[a/np.linalg.norm(N) for a in N]
+    norm = np.linalg.norm(N)
+    N = [a/norm for a in N]
     return N
 
 # Find the rotation axis for the panel
 def find_rotation_axis(normal_vector):
     rot_axis = np.cross(normal_vector, [0, 0, 1])
-    return rot_axis/np.linalg.norm(rot_axis)
+    if np.linalg.norm(rot_axis) == 0:
+        rot_axis = [1, 0, 0]
+    else:
+        rot_axis = rot_axis/np.linalg.norm(rot_axis)
+    return rot_axis
 
 # Find the rotation angle for the panel
 def find_rotation_angle(normal_vector):
@@ -34,4 +39,14 @@ def rotation_matrix(axis_of_rotation, rot_angle):
     R = (np.cos(rot_angle)*np.identity(3)) + ((1-np.cos(rot_angle))*np.outer(axis_of_rotation, axis_of_rotation)) + (np.sin(rot_angle)*skew(axis_of_rotation))
     return R
 
+# Rotate set of triangular panel points
+def rotate_points(points):
+    normal_vector=find_normal_vector(points[0], points[1], points[2])
+    rot_axis=find_rotation_axis(normal_vector)
+    rot_angle=find_rotation_angle(normal_vector)
+    R=rotation_matrix(rot_axis, rot_angle)
+    rotated_points=[]
+    for point in points:
+        rotated_points.append(np.dot(R, point))
+    return rotated_points
 

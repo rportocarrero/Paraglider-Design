@@ -1,7 +1,7 @@
 import numpy as np
 
-edgePoints = np.array([[1,1],[2,2]])
-panelPoints = np.array([[0,0],[1,1],[0,1]])
+edgePoints = np.array([[0,2],[1,2]])
+panelPoints = np.array([[0,0],[1,0],[1,1]])
 
 # This function aligns the panel with the edge of the previous panel
 def alignPanel(edgePoints, panelPoints):

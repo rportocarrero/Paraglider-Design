@@ -11,7 +11,7 @@ import numpy as np
 fid = plt.figure()
 ax = fid.add_subplot(111, projection='3d')
 
-test_points = [[0,0,0],[1,1,1],[1,0,1]]
+test_points = [[0,0,0],[1,0,0],[1,0,1]]
 print(f'Test Points: {test_points}')
 
 normal_vector = find_normal_vector(test_points[0], test_points[1], test_points[2])
@@ -30,6 +30,8 @@ print(f'Rotation Matrix:{rot_matrix}')
 rotated_points=[]
 for point in test_points:
     rotated_points.append(np.dot(rot_matrix, point))
+
+rotated_points = rotate_points(test_points)
 
 # Display the panel
 original_panel = art3d.Poly3DCollection([test_points])
