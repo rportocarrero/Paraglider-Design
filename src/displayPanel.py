@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from mpl_toolkits.mplot3d import art3d
-import testUnwrap as tu
+from pointRotation import *
 import numpy as np
 
 
@@ -11,19 +11,19 @@ import numpy as np
 fid = plt.figure()
 ax = fid.add_subplot(111, projection='3d')
 
-test_points = [[0,0,0],[1,0,0],[1,1,1]]
+test_points = [[0,0,0],[1,1,1],[1,0,1]]
 print(f'Test Points: {test_points}')
 
-normal_vector = tu.find_normal_vector(test_points[0], test_points[1], test_points[2])
+normal_vector = find_normal_vector(test_points[0], test_points[1], test_points[2])
 print(f'Normal Vector: {normal_vector}')
 
-rot_axis = tu.find_rotation_axis(normal_vector)
+rot_axis = find_rotation_axis(normal_vector)
 print(f'Rotation Axis:{rot_axis}')
 
-rot_angle = tu.find_rotation_angle(normal_vector)
+rot_angle = find_rotation_angle(normal_vector)
 print(f'Rotation Angle:{rot_angle}')
 
-rot_matrix = tu.rotation_matrix(rot_axis, rot_angle)
+rot_matrix = rotation_matrix(rot_axis, rot_angle)
 print(f'Rotation Matrix:{rot_matrix}')
 
 # Rotate the points
